@@ -1,0 +1,9 @@
+# Audio → text (local, open-source Whisper)
+faster-whisper>=1.0.3
+
+# Claude API — transcript cleanup / formatting / summary
+anthropic>=0.40.0
+
+# Google Drive access (service account)
+google-api-python-client>=2.100.0
+google-auth>=2.30.0

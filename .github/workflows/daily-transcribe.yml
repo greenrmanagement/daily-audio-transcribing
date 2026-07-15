@@ -1,0 +1,49 @@
+name: Daily audio transcription
+
+on:
+  schedule:
+    # 07:00 UTC every day. Adjust to your timezone as needed.
+    - cron: "0 7 * * *"
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
+
+# Prevent overlapping runs (transcription can be slow).
+concurrency:
+  group: daily-transcribe
+  cancel-in-progress: false
+
+jobs:
+  transcribe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Cache Whisper model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: whisper-${{ vars.WHISPER_MODEL || 'small' }}
+
+      - name: Run transcription
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DRIVE_FOLDER_ID: ${{ vars.DRIVE_FOLDER_ID }}
+          WHISPER_MODEL: ${{ vars.WHISPER_MODEL || 'small' }}
+          CLAUDE_MODEL: ${{ vars.CLAUDE_MODEL || 'claude-opus-4-8' }}
+          LOOKBACK_DAYS: ${{ vars.LOOKBACK_DAYS }}
+          LANGUAGE: ${{ vars.LANGUAGE }}
+        run: python transcribe.py

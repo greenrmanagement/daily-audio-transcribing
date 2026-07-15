@@ -1,0 +1,25 @@
+# Secrets — never commit these
+service-account.json
+*.serviceaccount.json
+.env
+
+# Downloaded audio / scratch
+downloads/
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.ogg
+*.aac
+*.mp4
+*.webm
+
+# Whisper model cache
+models/
+.cache/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
