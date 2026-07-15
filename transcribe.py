@@ -62,6 +62,23 @@ def log(msg: str) -> None:
     print(msg, flush=True)
 
 
+def normalize_folder_id(value: str) -> str:
+    """Accept a bare folder ID or a pasted Drive URL and return the ID.
+
+    Handles:
+      1Bq8...                                      -> 1Bq8...
+      https://drive.google.com/drive/folders/1Bq8  -> 1Bq8...
+      https://drive.google.com/drive/u/0/folders/1Bq8?usp=sharing -> 1Bq8...
+    """
+    value = value.strip()
+    if "/folders/" in value:
+        value = value.split("/folders/", 1)[1]
+    # Drop any query string / fragment / trailing path segment.
+    for sep in ("?", "#", "/"):
+        value = value.split(sep, 1)[0]
+    return value.strip()
+
+
 # --------------------------------------------------------------------------- #
 # Google Drive
 # --------------------------------------------------------------------------- #
@@ -245,7 +262,7 @@ def format_with_claude(raw_transcript: str, source_name: str) -> str:
 # --------------------------------------------------------------------------- #
 
 def main() -> int:
-    folder_id = env("DRIVE_FOLDER_ID", required=True)
+    folder_id = normalize_folder_id(env("DRIVE_FOLDER_ID", required=True))
     suffix = env("TRANSCRIPT_SUFFIX", " - Transcript")
     max_files = int(env("MAX_FILES_PER_RUN", "25"))
 
